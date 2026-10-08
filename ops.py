@@ -239,9 +239,12 @@ class GGMLOps(comfy.ops.manual_cast):
             self.weight = None
             self.bias = None
 
-        def forward_ggml_cast_weights(self, input):
+        def forward_ggml_cast_weights(self, input, input_act=None, act_weight=None,
+                                      act_eps=0.0, residual=None, residual_scale=None):
+            input = comfy.ops._eager_input_act(input, input_act, act_weight, act_eps)
             weight, bias = self.cast_bias_weight(input)
-            return torch.nn.functional.linear(input, weight, bias)
+            out = torch.nn.functional.linear(input, weight, bias)
+            return comfy.ops._linear_residual(out, residual, residual_scale)
 
     class Conv2d(GGMLLayer, comfy.ops.manual_cast.Conv2d):
         def forward_ggml_cast_weights(self, input):
